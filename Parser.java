@@ -11,6 +11,21 @@ import java.util.regex.Pattern;
 
     public class Parser
     {
+        public static void main(String[] args) throws Exception {
+            Document page = getPage();
+            int index = 0;
+            Element tableWth = page.select("table[class=wt]").first();
+            Elements names = tableWth.select("tr[class=wth]");
+            Elements values = tableWth.select("tr[valign=top]");
+
+            for(Element name: names){
+                String dateString = name.select("th[id=dt]").text();
+                String date = getDateFromString(dateString);
+                System.out.println(date + "    Явления    Температура    Давление   Влажность    Ветер");
+                int iterationCount = printPartValues(values, index);
+                index +=iterationCount;
+            }
+        }
         public static Document getPage() throws IOException{
             String url = ("http://www.pogoda.spb.ru/");
             Document page = Jsoup.parse(new URL(url), 3000);
@@ -30,31 +45,28 @@ import java.util.regex.Pattern;
         private static int printPartValues(Elements values, int index){
             int iterationCount = 4;
             if (index==0){
-                Element valueLn = values.get(3);
-                boolean isMorning = valueLn.text().contains("Утро");
+                Element valueLn = values.get(0);
+              /**  boolean isMorning = valueLn.text().contains("Утро");
                 if (isMorning){
                     iterationCount = 3;
-                }
+                }*/
 
-				/** String timeOfDay = valueLn.text().split(" ")[0];
-				 switch(timeOfDay){
-                    case("Утро"):
+                 switch(valueLn.text().split(" ")[0]){
+                    case ("День"):
                         iterationCount = 3;
                         break;
-                    case("День"):
+                    case ("Вечер"):
                         iterationCount = 2;
                         break;
-                    case("Вечер"):
+                    case ("Ночь"):
                         iterationCount = 1;
                         break;
-                    default:
-                        break;
-                }
-                */
+                 }
+
             }
 
             for(int i=0; i<iterationCount; i++){
-                Element valueLine = values.get(index+1);
+                Element valueLine = values.get(index+i);
                 for(Element td: valueLine.select("td")){
                     System.out.print(td.text()+"    ");
                 }
@@ -62,21 +74,4 @@ import java.util.regex.Pattern;
             }
             return(iterationCount);
         }
-
-        public static void main(String[] args) throws Exception {
-            Document page = getPage();
-            Element tableWth = page.select("table[class=wt]").first();
-            Elements names = tableWth.select("tr[class=wth]");
-            Elements values = tableWth.select("tr[valign=top]");
-            int index = 0;
-            for(Element name: names){
-                String dateString = name.select("th[id=dt]").text();
-                String date = getDateFromString(dateString);
-                System.out.println(date + "    Явления    Температура    Давление   Влажность    Ветер");
-                int iterationCount = printPartValues(values, index);
-                index +=iterationCount;
-            }
-        }
     }
-
-
